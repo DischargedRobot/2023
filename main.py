@@ -1,4 +1,5 @@
 import pygame as pg
+import random
 
 
 pg.init()
@@ -8,16 +9,16 @@ screen_width, screen_height = 800, 600
 FPS = 24    # frame per second
 clock = pg.time.Clock()
 
-# изображения          
-bg_img = pg.image.load('src/background.png')
-icon_img = pg.image.load('src/ufo.png')
+# изображения
+bg_img = pg.image.load('background.png')
+icon_img = pg.image.load('ufo.png')
 
 display = pg.display.set_mode((screen_width, screen_height))
 pg.display.set_icon(icon_img)
 pg.display.set_caption('Космическое вторжение')
 
 sys_font = pg.font.SysFont('arial', 34)
-font = pg.font.Font('src/04B_19.TTF', 48)
+font = pg.font.Font('04B_19.TTF', 48)
 
 # display.fill('blue', (0, 0, screen_width, screen_height))
 display.blit(bg_img, (0, 0))        # image.tr
@@ -30,16 +31,17 @@ w, h = game_over_text.get_size()
 # display.blit(game_over_text, (screen_width/2 - w/2, screen_height / 2 - h/2))
 
 # игрок
-player_img = pg.image.load('src/player.png')
+player_img = pg.image.load('player.png')
 player_width, player_height = player_img.get_size()
 player_gap = 10
 player_velocity = 10
 player_dx = 0
+player_dy = 0
 player_x = screen_width/2 - player_width/2
 player_y = screen_height  - player_height - player_gap
 
 # пуля
-bullet_img = pg.image.load('src/bullet.png')
+bullet_img = pg.image.load('bullet.png')
 bullet_width, bullet_height = bullet_img.get_size()
 bullet_dy = -5
 bullet_x = 0     # микро дз - пускать из середины
@@ -47,7 +49,7 @@ bullet_y = 0
 bullet_alive = False    # есть пуля?
 
 # противник
-enemy_img = pg.image.load('src/enemy.png')
+enemy_img = pg.image.load('enemy.png')
 enemy_width, enemy_height = enemy_img.get_size()
 enemy_dx = 0
 enemy_dy = 1
@@ -55,17 +57,20 @@ enemy_x = 0
 enemy_y = 0
 
 def enemy_create():
+    """ Создаем противника в случайном месте вверху окна."""
     global enemy_y, enemy_x
-    enemy_x = screen_width / 2 - enemy_width / 2
+    enemy_x = random.randint(0, screen_width - enemy_width)   # screen_width / 2 - enemy_width / 2
     enemy_y = 0
+    print(f'CREATE: {enemy_x=}')
 
 
 def model_update():
-    palayer_model()
+    palayer_model_x()
+    palayer_model_y()
     bullet_model()
     enemy_model()
 
-def palayer_model():
+def palayer_model_x():
     x = 7   # создание переменной и ее инициализация
     x = 7   # изменение значения уже созданной переменнной
     global player_x
@@ -74,6 +79,14 @@ def palayer_model():
         player_x = 0
     elif player_x > screen_width - player_width:
         player_x = screen_width - player_width
+
+def palayer_model_y():
+    global player_y
+    player_y += player_dy
+    if player_y < 0:
+        player_y = 0
+    elif player_y > screen_height - player_height:
+        player_y = screen_height - player_height
 
 def bullet_model():
     """ Изменяется положение пули.
@@ -87,7 +100,7 @@ def bullet_model():
 def bullet_create():
     global bullet_y, bullet_x, bullet_alive
     bullet_alive = True
-    bullet_x = player_x  # микро дз - пускать из середины
+    bullet_x = player_x + bullet_width/2 # микро дз - пускать из середины
     bullet_y = player_y - bullet_height
 
 def enemy_model():
@@ -119,7 +132,7 @@ def display_redraw():
     pg.display.update()
 
 def event_processing():
-    global player_dx
+    global player_dx,player_dy
     running = True
     for event in pg.event.get():
         # нажали крестик на окне
@@ -134,10 +147,15 @@ def event_processing():
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_a or event.key == pg.K_LEFT:
                 player_dx = -player_velocity
-            if event.key == pg.K_d or event.key == pg.K_RIGHT:
+            elif event.key == pg.K_d or event.key == pg.K_RIGHT:
                 player_dx = player_velocity
+            elif event.key == pg.K_w:
+                player_dy = -player_velocity
+            elif event.key == pg.K_s:
+                player_dy = player_velocity
         if event.type == pg.KEYUP:
             player_dx = 0
+            player_dy = 0
 
         # по левому клику мыши стреляем
         if event.type == pg.MOUSEBUTTONDOWN:
@@ -150,7 +168,7 @@ def event_processing():
     clock.tick(FPS)
     return running
 
-
+# random.seed(77)
 enemy_create()
 running = True
 while running:
