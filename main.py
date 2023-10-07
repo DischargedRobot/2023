@@ -17,13 +17,12 @@ display = pg.display.set_mode((screen_width, screen_height))
 pg.display.set_icon(icon_img)
 pg.display.set_caption('Космическое вторжение')
 
-sys_font = pg.font.SysFont('arial', 34)
 font = pg.font.Font('04B_19.TTF', 48)
 
 # display.fill('blue', (0, 0, screen_width, screen_height))
 display.blit(bg_img, (0, 0))        # image.tr
 
-text_img = sys_font.render('Score 123', True, 'white')
+# text_img = sys_font.render('Score 123', True, 'white')
 # display.blit(text_img, (100, 50))
 
 game_over_text = font.render('Game Over', True, 'red')
@@ -38,7 +37,7 @@ player_velocity = 10
 player_dx = 0
 player_dy = 0
 player_x = screen_width/2 - player_width/2
-player_y = screen_height  - player_height - player_gap
+player_y = screen_height - player_height - player_gap
 
 # пуля
 bullet_img = pg.image.load('bullet.png')
@@ -56,6 +55,9 @@ enemy_dy = 1
 enemy_x = 0
 enemy_y = 0
 
+score = 0
+score_font = pg.font.SysFont('Times New Roman', 24)
+score_text = score_font.render(f'Очки: {str(score)}', True, 'White')
 def enemy_create():
     """ Создаем противника в случайном месте вверху окна."""
     global enemy_y, enemy_x
@@ -71,8 +73,6 @@ def model_update():
     enemy_model()
 
 def palayer_model_x():
-    x = 7   # создание переменной и ее инициализация
-    x = 7   # изменение значения уже созданной переменнной
     global player_x
     player_x += player_dx
     if player_x < 0:
@@ -89,8 +89,7 @@ def palayer_model_y():
         player_y = screen_height - player_height
 
 def bullet_model():
-    """ Изменяется положение пули.
-    """
+    """ Изменяется положение пули. """
     global bullet_y, bullet_alive
     bullet_y += bullet_dy
     # пуля улетела за верх экрана
@@ -122,11 +121,18 @@ def enemy_model():
             print('BANG!')
             enemy_create()
             bullet_alive = False
+            score_up()
+
+def score_up():
+    global score,score_text
+    score += 10
+    score_text = score_font.render(f'Очки: {str(score)}', True, 'White')
 
 def display_redraw():
     display.blit(bg_img, (0, 0))
     display.blit(player_img, (player_x, player_y))
     display.blit(enemy_img, (enemy_x, enemy_y))
+    display.blit(score_text, (10, 10))
     if bullet_alive:
         display.blit(bullet_img, (bullet_x, bullet_y))
     pg.display.update()
